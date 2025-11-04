@@ -1,0 +1,6 @@
+district,dealer,product_name,brand,crop,disease,unit_price_inr,unit,expected_yield_gain_pct,notes
+Hyderabad,KrishiKendra Neem Oil,AcmeNeem,Tomato,Tomato___Early_blight,250,ml,5,"Organic neem-based; preventative"
+Hyderabad,CropCare Mancozeb,CareManco,Tomato,Tomato___Early_blight,180,250g,18,"Fungicide; typical 2 sprays"
+Hyderabad,AgroPlus Copper Oxychloride,AgroCopper,Tomato,Tomato___Leaf_Mold,220,100g,15,"Fungicide broad-spectrum"
+Hyderabad,GreenField Imidacloprid,GF-Imida,Tomato,Tomato___Tomato_Yellow_Leaf_Curl_Virus,160,10ml,0,"Viral; vector control only"
+Hyderabad,KrishiKendra Sulfur Dust,KK-Sulfur,Tomato,Tomato___Spider_mites Two-spotted_spider_mite,140,500g,20,"Miticide/ Sulfur; contact"

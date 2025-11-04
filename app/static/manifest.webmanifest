@@ -1,0 +1,9 @@
+{
+  "name": "Kisan-Netra",
+  "short_name": "KisanNetra",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a7d34",
+  "theme_color": "#0a7d34",
+  "icons": []
+}

@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Flask (Kisan-Netra)",
+      "type": "python",
+      "request": "launch",
+      "module": "app.app",
+      "justMyCode": true,
+      "env": {
+        "FLASK_ENV": "development",
+        "HOST": "0.0.0.0",
+        "PORT": "8000",
+        "MODEL_ARCH": "vit_base_patch16_224",
+        "NUM_CLASSES": "38",
+        "MODEL_WEIGHTS": "models/vit_plant_disease.pth",
+        "DEVICE": "cpu",
+        "DB_URL": "sqlite:///data/kisan_netra.db"
+      }
+    }
+  ]
+}

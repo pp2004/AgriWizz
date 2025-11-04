@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+# OS
+.DS_Store
+# DBs & caches
+*.sqlite
+*.db
+# Build
+dist/
+build/
+# Node (if you add tooling later)
+node_modules/

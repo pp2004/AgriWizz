@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>Kisan-Netra</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Kisan-Netra</h1>
+    <p>Hyper-local AI advisory for farmers (demo)</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>1) Diagnose crop disease</h2>
+      <form id="predictForm">
+        <input type="file" id="image" accept="image/*" capture="environment" required>
+        <button type="submit">Predict</button>
+      </form>
+      <pre id="predictOut"></pre>
+    </section>
+
+    <section class="card">
+      <h2>2) Get local recommendation</h2>
+      <form id="recForm">
+        <label>District <input type="text" id="district" value="Hyderabad"></label>
+        <label>Crop <input type="text" id="crop" value="Tomato"></label>
+        <label>Disease <input type="text" id="disease" value="Tomato___Early_blight"></label>
+        <label>Baseline price (₹/kg) <input type="number" id="bp" value="20"></label>
+        <label>Acreage (acres) <input type="number" id="ac" value="1.0"></label>
+        <button type="submit">Recommend</button>
+      </form>
+      <pre id="recOut"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>Demo • No personal data stored • Models: ViT on PlantVillage</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
