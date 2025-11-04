@@ -14,5 +14,3 @@ dist/
 build/
 # Node (if you add tooling later)
 node_modules/
-
-models/*.pth
