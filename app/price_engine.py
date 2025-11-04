@@ -22,7 +22,9 @@ class PriceEngine:
         q = text("""
             SELECT dealer, product_name, brand, unit_price_inr, expected_yield_gain_pct, notes
             FROM prices
-            WHERE lower(district)=lower(:district) AND lower(crop)=lower(:crop) AND lower(disease)=lower(:disease)
+            WHERE lower(trim(district))=lower(trim(:district))
+              AND lower(trim(crop))=lower(trim(:crop))
+              AND lower(trim(disease))=lower(trim(:disease))
             ORDER BY unit_price_inr ASC
         """)
         with self.engine.begin() as conn:

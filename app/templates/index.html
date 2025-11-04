@@ -1,45 +1,286 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="/manifest.webmanifest">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <title>Kisan-Netra</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 <body>
-  <header>
-    <h1>Kisan-Netra</h1>
-    <p>Hyper-local AI advisory for farmers (demo)</p>
+  <header class="app-header elevate">
+    <div class="brand">
+      <div class="logo">🌾</div>
+      <div class="titles">
+        <h1>Kisan-Netra</h1>
+        <p class="subtitle">Hyper-local AI advisory for farmers</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-dot" id="healthDot" title="Backend health"></div>
+      <select id="langSelect" class="chip">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+      </select>
+      <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">🌓</button>
+    </div>
   </header>
 
-  <main>
-    <section class="card">
-      <h2>1) Diagnose crop disease</h2>
-      <form id="predictForm">
-        <input type="file" id="image" accept="image/*" capture="environment" required>
-        <button type="submit">Predict</button>
-      </form>
-      <pre id="predictOut"></pre>
+  <nav class="tabs elevate">
+    <button class="tab active" data-tab="diagnose">
+      Diagnose
+      <span class="info" data-info-title="Diagnose" data-info="
+Runs your image through a Vision Transformer (ViT).
+Preprocessing: resize→center-crop 224, ImageNet normalize.
+Implemented in app/model_loader.py using timm + torchvision.
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="recommend">
+      Recommend
+      <span class="info" data-info-title="Recommend" data-info="
+Computes a simple profit heuristic from the local price table:
+profit = (yield_gain_pct × baseline_revenue) − cost.
+Implemented in app/price_engine.py using SQLite via SQLAlchemy.
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="price-manager">
+      Price Manager
+      <span class="info" data-info-title="Price Manager" data-info="
+Full CRUD for local dealer/mandi entries.
+Backend: /api/prices endpoints (GET/POST/PUT/DELETE, import/export).
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="history">
+      History
+      <span class="info" data-info-title="History" data-info="
+Stores predictions + advisories locally (no cloud).
+Implemented using browser localStorage with export/import JSON.
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="voice">
+      Voice
+      <span class="info" data-info-title="Voice" data-info="
+Uses the browser SpeechSynthesis TTS as a fallback to Bhashini.
+No keys needed; purely client-side. Toggle language above.
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="settings">
+      Settings
+      <span class="info" data-info-title="Settings" data-info="
+Backend health, device info, dark mode, and language preferences.
+      ">i</span>
+    </button>
+    <button class="tab" data-tab="about">
+      About
+      <span class="info" data-info-title="About" data-info="
+Shows links to Model Card, Privacy, and Terms shipped with the app.
+      ">i</span>
+    </button>
+  </nav>
+
+  <main id="views">
+    <!-- Diagnose -->
+    <section class="view active" id="view-diagnose">
+      <div class="panel elevate fade-in">
+        <div class="panel-header">
+          <h2>Diagnose a leaf</h2>
+          <div class="actions">
+            <button id="captureBtn" class="btn ghost">Use camera</button>
+            <label class="btn">
+              Upload image
+              <input type="file" id="imageInput" accept="image/*" hidden />
+            </label>
+          </div>
+        </div>
+
+        <div id="dropZone" class="dropzone">
+          <div class="dz-inner">
+            <div class="dz-icon">📷</div>
+            <p>Drag & drop a leaf photo here</p>
+            <small>or use the buttons above</small>
+          </div>
+        </div>
+
+        <div class="preview-grid">
+          <div class="card">
+            <h3>Preview</h3>
+            <canvas id="previewCanvas" width="224" height="224" class="preview"></canvas>
+          </div>
+
+          <div class="card">
+            <h3>Top predictions</h3>
+            <div id="predictions" class="predictions"></div>
+            <div class="row">
+              <button id="predictBtn" class="btn primary">Run diagnosis</button>
+              <div class="spinner" id="predictSpin" hidden></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>2) Get local recommendation</h2>
-      <form id="recForm">
-        <label>District <input type="text" id="district" value="Hyderabad"></label>
-        <label>Crop <input type="text" id="crop" value="Tomato"></label>
-        <label>Disease <input type="text" id="disease" value="Tomato___Early_blight"></label>
-        <label>Baseline price (₹/kg) <input type="number" id="bp" value="20"></label>
-        <label>Acreage (acres) <input type="number" id="ac" value="1.0"></label>
-        <button type="submit">Recommend</button>
-      </form>
-      <pre id="recOut"></pre>
+    <!-- Recommend -->
+    <section class="view" id="view-recommend">
+      <div class="panel elevate fade-in">
+        <div class="panel-header">
+          <h2>Get advisory</h2>
+          <button class="btn ghost" id="fillFromPrediction">Use top diagnosis</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>Inputs</h3>
+            <div class="form">
+              <label>District
+                <input id="district" value="Hyderabad" />
+              </label>
+              <label>Crop
+                <input id="crop" value="Tomato" />
+              </label>
+              <label>Disease
+                <select id="disease"></select>
+              </label>
+              <div class="grid-2">
+                <label>Baseline price (₹/kg)
+                  <input type="number" id="bp" value="20" step="0.5" />
+                </label>
+                <label>Acreage (acres)
+                  <input type="number" id="ac" value="1.0" step="0.1" />
+                </label>
+              </div>
+              <div class="row">
+                <button id="recBtn" class="btn primary">Recommend</button>
+                <div class="spinner" id="recSpin" hidden></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Recommendation</h3>
+            <div id="recOut" class="recommendation"></div>
+            <div class="row">
+              <button id="saveToHistory" class="btn ghost" disabled>Save to history</button>
+              <button id="speakAdvice" class="btn" disabled>Speak</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Price Manager -->
+    <section class="view" id="view-price-manager">
+      <div class="panel elevate fade-in">
+        <div class="panel-header">
+          <h2>Price Manager</h2>
+          <div class="row wrap">
+            <button id="pmRefresh" class="btn">Refresh</button>
+            <button id="pmAddRow" class="btn">Add row</button>
+            <label class="btn ghost">Import CSV
+              <input type="file" id="pmImport" accept=".csv" hidden />
+            </label>
+            <button id="pmExport" class="btn">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="pmTable">
+            <thead>
+              <tr>
+                <th>District</th><th>Dealer</th><th>Product</th><th>Brand</th>
+                <th>Crop</th><th>Disease</th><th>Price (₹)</th><th>Unit</th>
+                <th>Yield +%</th><th>Notes</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pmBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="view" id="view-history">
+      <div class="panel elevate fade-in">
+        <div class="panel-header">
+          <h2>My history (local)</h2>
+          <div class="row wrap">
+            <button id="histExport" class="btn">Export JSON</button>
+            <label class="btn ghost">Import JSON
+              <input type="file" id="histImport" accept=".json" hidden />
+            </label>
+            <button id="histClear" class="btn danger">Clear</button>
+          </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- Voice -->
+    <section class="view" id="view-voice">
+      <div class="panel elevate fade-in">
+        <h2>Voice advisory</h2>
+        <p>Use browser TTS to speak the latest recommendation.</p>
+        <div class="row">
+          <button id="voiceTest" class="btn">Say hello</button>
+          <button id="voiceSpeakLatest" class="btn primary" disabled>Speak latest advisory</button>
+        </div>
+        <p class="muted">Tip: change language in the header to try voice in another locale.</p>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="view" id="view-settings">
+      <div class="panel elevate fade-in">
+        <h2>Settings</h2>
+        <div id="healthInfo" class="card"></div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Appearance</h3>
+            <div class="form">
+              <label>Theme
+                <select id="themeSelect">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Language</h3>
+            <p>Controls UI strings and voice language (where supported).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="view" id="view-about">
+      <div class="panel elevate fade-in">
+        <h2>About</h2>
+        <ul class="doc-links">
+          <li><a href="/MODEL_CARD.md" target="_blank">Model Card</a></li>
+          <li><a href="/PRIVACY.md" target="_blank">Privacy Policy</a></li>
+          <li><a href="/TERMS.md" target="_blank">Terms of Use</a></li>
+        </ul>
+        <p class="muted">All docs ship with this app for offline review.</p>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <p>Demo • No personal data stored • Models: ViT on PlantVillage</p>
-  </footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="infoModal" class="modal" hidden>
+    <div class="modal-card elevate">
+      <div class="modal-head">
+        <h3 id="infoTitle">Info</h3>
+        <button id="infoClose" class="icon-btn">✕</button>
+      </div>
+      <pre id="infoBody" class="modal-body"></pre>
+      <div class="modal-actions">
+        <button id="infoOk" class="btn primary">OK</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/static/js/app.js"></script>
 </body>
